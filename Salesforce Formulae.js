@@ -4,6 +4,60 @@
     Data Model	
     http://www.salesforce.com/us/developer/docs/api/Content/data_model.htm
 
+//Fletcher Aluminium Opportunity Fields
+
+--
+    // Key Reporting Metrics Using Formula Fields
+ --   
+    Quoted__c	
+    IF(LEN(Quote__c)>0,1,0)
+     
+    Sum of Unquoted                     IF( Quoted__c =0,1,0)
+    Sum of Unquoted Won                 IF(AND(Quoted__c=0, ISPICKVAL(StageName, "Closed Won")), 1,0)
+    Sum of Unquoted Won Value           IF(AND(Quoted__c=0, ISPICKVAL(StageName, "Closed Won")), Custom_Amount__c + BLANKVALUE(Upsell_Amount__c, 0) ,0)
+    Sum of Quoted Number                IF(LEN(Quote__c)>0,1,0)
+    Sum of Quoted Won                   IF(AND(Quoted__c=1, ISPICKVAL(StageName, "Closed Won")), 1,0)
+    Sum of Quoted Value                 IF(Quoted__c=1,Custom_Amount__c + BLANKVALUE(Upsell_Amount__c, 0),0)
+    Sum of Quoted Won Value             IF(AND(Quoted__c=1, ISPICKVAL(StageName, "Closed Won")), Custom_Amount__c + BLANKVALUE(Upsell_Amount__c, 0) ,0)
+    Sum of Quotes Pending               IF(AND( Quoted__c=1, NOT(ISPICKVAL(StageName, "Closed Won")), NOT(ISPICKVAL(StageName, "Closed Lost"))), Quoted__c ,0)
+    Sum of Quotes Pending Value         IF(AND( Quoted__c=1, NOT(ISPICKVAL(StageName, "Closed Won")), NOT(ISPICKVAL(StageName, "Closed Lost"))), Custom_Amount__c + BLANKVALUE(Upsell_Amount__c, 0) ,0)
+    Sum of Quotes Lost                  IF(AND( Quoted__c=1, ISPICKVAL(StageName, "Closed Lost")), Quoted__c ,0)
+    Sum of Quotes Lost Value            IF(AND( Quoted__c=1, ISPICKVAL(StageName, "Closed Lost")), Custom_Amount__c + BLANKVALUE(Upsell_Amount__c, 0) ,0)
+    Sum of Opportunity Duration         IF(AND( ISPICKVAL(StageName,"Closed Won"), CloseDate > DATEVALUE(CreatedDate)) ,CloseDate - DATEVALUE(CreatedDate) ,0)
+    Hit Rate Value                      IF(Opportunity.Quoted_Value__c:SUM=0,0,Opportunity.Quoted_Won_Value__c:SUM/Opportunity.Quoted_Value__c:SUM)                   
+    Hit Rate Count                      IF(Opportunity.Quoted__c:SUM=0,0,Opportunity.Quoted_Won__c:SUM/Opportunity.Quoted__c:SUM)
+    TOTAL REVENUE WON                   Opportunity.Unquoted_Won__c:SUM+Opportunity.Quoted_Won_Value__c:SUM
+    Avg Duration Won                    IF(Opportunity.Opportunity_Duration__c:SUM <> 0,Opportunity.Opportunity_Duration__c:SUM/Opportunity.Quoted_Won__c:SUM,0)
+    Record Count
+
+    Closed Won Amount	
+    IF( ISPICKVAL(StageName, "Closed Won"), Amount, 0)
+--
+    Job Completed Due Date	
+    CASE(MOD(Site_Measure_Completion_Date__c - DATE( 1900, 1, 7 ), 7 ), 
+    0, Site_Measure_Completion_Date__c + 1 + 4 + 2 + 5 + 5 + 2, /* Sun: Site Measure Done + 1 wknd day + 15 days */ 
+    1, Site_Measure_Completion_Date__c + 4 + 2 + 5 + 5 + 2, /* (Mon): Site Measure Done + 15 days */ 
+    Site_Measure_Completion_Date__c + 2 + 4 + 2 + 5 + 5 + 2 /* Default (Tues/Wed/Thurs/Fri/Sat): Site Measure Done + 15 days */ 
+    )
+--
+    Job Sent Service	
+    IMAGE( 
+        CASE( IF( Job_Sent_Days__c <1,0,Job_Sent_Days__c ) , 
+        0, "img/alohaSkin/help_orange.png", 
+        1, "img/samples/light_green.gif", 
+        2, "img/samples/light_green.gif", 
+        3, "img/samples/light_green.gif", 
+        4, "img/samples/light_green.gif", 
+        5, "img/samples/light_yellow.gif", 
+        "img/samples/light_red.gif"), 
+        "" 
+    )
+--
+    MGH Overall Workdays //From Quote Request --> Actual Delivery
+    (5 * ( FLOOR( ( Actual_Delivery__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD(Actual_Delivery__c - DATE( 1900, 1, 8), 7 ) ) ) 
+    - 
+    (5 * ( FLOOR( ( Quote_Request__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD(Quote_Request__c - DATE( 1900, 1, 8), 7 ) ) )
+
 
 
 // Fletcher Aluminium Account Fields
@@ -77,9 +131,6 @@
     Text(Lost__c/(Won__c + Lost__c)) & 
     "&chs=275x100&chf=bg,s,F3F3EC&chl=Won|Lost&chco=5555ff", 
     "chart text")
-
-
-
 
 
 // Fletcher Living Maintenance
