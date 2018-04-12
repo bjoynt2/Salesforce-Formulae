@@ -30,8 +30,114 @@
     Avg Duration Won                    IF(Opportunity.Opportunity_Duration__c:SUM <> 0,Opportunity.Opportunity_Duration__c:SUM/Opportunity.Quoted_Won__c:SUM,0)
     Record Count
 
+--
     Closed Won Amount	
     IF( ISPICKVAL(StageName, "Closed Won"), Amount, 0)
+--
+    Delivery Days	//Agreed Delivery -> Actual Delivery = 0 days
+    (5 * ( FLOOR( ( Actual_Delivery__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+    Actual_Delivery__c - DATE( 1900, 1, 8), 7 ) ) ) 
+    - 
+    (5 * ( FLOOR( ( Job_Completed__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+    Job_Completed__c - DATE( 1900, 1, 8), 7 ) ) )
+--
+    Delivery Due Date	
+    Agreed_Delivery__c
+--
+    Delivery Ex Factory Image	
+    IF( Delivery_Ex_Factory__c = false, IMAGE("https://c.na1.content.force.com/servlet/servlet.FileDownload?file=01530000002QmLG", "checkbox", 14, 14),IMAGE("https://c.na1.content.force.com/servlet/servlet.FileDownload?file=01530000002QmLB", "checkbox", 14, 14))
+--
+    Delivery Overdue Days
+    /*Actual_Delivery__c is null, today-expect due date; Actual_Delivery__c - expect due date*/ 
+        IF( ISNULL(Actual_Delivery__c), TODAY()-Delivery_Due_Date__c, 
+            /*Actual_Delivery__c is larger than Delivery_Due_Date__c*/ 
+            IF( Actual_Delivery__c - Agreed_Delivery__c < 0, 0,	
+            /*Delivery_Weekdays__c has overdue*/ 
+            IF ( Delivery_Weekdays__c < 0, 0, Actual_Delivery__c - Delivery_Due_Date__c 
+            ) 
+        )	
+    ) 
+    /* 
+    if you need to cater for working days 
+    (5 * ( FLOOR( ( Actual_Delivery__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+    Actual_Delivery__c - DATE( 1900, 1, 8), 7 ) ) ) 
+    - 
+    (5 * ( FLOOR( ( Site_Measure_Completion_Date__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+    Site_Measure_Completion_Date__c - DATE( 1900, 1, 8), 7 ) ) )+1 
+    */	
+--
+    Delivery Service //0:Green;1-2:Yellow;Else:Red	
+    IMAGE( 
+        CASE( IF(ISNULL( Agreed_Delivery__c ) || ISNULL( Actual_Delivery__c ) || Delivery_Weekdays__c <0,-1,Delivery_Weekdays__c) , 
+        -1,"img/alohaSkin/help_orange.png", 
+        0, "img/samples/light_green.gif", 
+        1, "img/samples/light_yellow.gif", 
+        2, "img/samples/light_yellow.gif", 
+        "img/samples/light_red.gif"), 
+        "" 
+        )
+--
+    Deposit Balance	
+    Sell_Price_Inc_GST__c - Deposit_Required__c
+--
+    Disable Multiple Attachments
+    IF( $User.Disable_Multiple_Attachments__c , "TRUE", "FALSE")
+--
+    End Date	
+    CloseDate
+--
+    Expired
+    IMAGE(IF(CloseDate < TODAY()&& 
+    NOT(IsClosed), "/img/samples/flag_red.gif","/s.gif"), "")
+--   
+    Expired Flag	
+    IF(CloseDate < TODAY()&& NOT(IsClosed), "Yes","No")
+--
+    Factory Hours Remaining	
+    Factory_Hours_Budget__c - Factory_Hours_Actual__c
+--
+    Factory HRS	//Factory Minutes expressed in HRS (Factory HRS / 60) if you enter minutes in the Factory HRS Field
+    IF(Factory_HRS__c <> 0,Factory_HRS__c / 60,0)
+--
+    Garage or Aluminium	
+    IF( ISPICKVAL( Product_Brands__c , "Garage Doors"),"Garage Doors" ,"Aluminium")
+--
+    Garages and Flyscreens	
+    IF( OR(ISPICKVAL( Product_Brands__c , "Garage Doors"),ISPICKVAL( Product_Brands__c , "Flyscreen/Security")), TEXT(Product_Brands__c) ,"Aluminium")
+--
+    GM Less Install %	
+    IF(Custom_Amount__c>0,GM_Less_Install__c / Custom_Amount__c,0)
+--
+    Gross Margin $	
+    Amount - Cost__c
+--
+    Gross Margin %	
+    IF(Amount > 0,(Amount - Cost__c) / Amount,0)
+--   
+    Gross Margin Less Install Costs	
+    Gross_Margin__c - Install_Costs__c
+--
+    GST
+    Amount * 0.15
+--
+    Install Hours Over	
+    IMAGE( 
+        CASE( IF( Install_Hours_Remaining__c <0, -1, 1) , 
+        -1,"img/samples/flag_red.gif", 
+        1, "img/samples/flag_green.gif", 
+        "img/samples/flag_red.gif"), 
+        "" 
+        )
+--
+    Install Hours Remaining	
+    Install_Hours_Budget__c - Install_Hours_Actual__c
+--
+    Job Completed Days //Site Measure Done -> Job Completed = 15 days
+    (5 * ( FLOOR( ( Job_Completed__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+        Job_Completed__c - DATE( 1900, 1, 8), 7 ) ) ) 
+    - 
+    (5 * ( FLOOR( ( Job_Sent__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+    Job_Sent__c - DATE( 1900, 1, 8), 7 ) ) )   
 --
     Job Completed Due Date	
     CASE(MOD(Site_Measure_Completion_Date__c - DATE( 1900, 1, 7 ), 7 ), 
@@ -53,11 +159,50 @@
         "" 
     )
 --
+    Job From Rylock	//Rylock Assigned this Job to Nebulite
+    IF( Assigned_To_Nebulite__c = TRUE, TRUE, FALSE)
+--
+    Job Sent Days	//Site Measure Done -> Job Sent = 4 days
+    (5 * ( FLOOR( ( Job_Sent__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+        Job_Sent__c- DATE( 1900, 1, 8), 7 ) ) ) 
+        - 
+    (5 * ( FLOOR( ( Site_Measure_Completion_Date__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD( 
+    Site_Measure_Completion_Date__c - DATE( 1900, 1, 8), 7 ) ) )
+--
+    Job Sent Due Date	//Site Measure Done + 4 Days
+    CASE( MOD( Site_Measure_Completion_Date__c - DATE( 1900, 1, 7 ), 7 ), 
+    0, Site_Measure_Completion_Date__c + 2 + 1 + 1, /* Sun: Site_Measure_Completion_Date__c + 1 wknd day + 4 days CORRECT */ 
+    1, Site_Measure_Completion_Date__c + 2 + 1, /* (Mon): Site_Measure_Completion_Date__c + 4 days */ 
+    2, Site_Measure_Completion_Date__c + 2 + 1, /* (Tue): Site_Measure_Completion_Date__c + 4 days */ 
+    Site_Measure_Completion_Date__c + 2 + 2 + 1/* Default (Wed/Thurs/Fri/Sat): Site_Measure_Completion_Date__c + 4 days */ 
+    )
+--
+    Job Sent Service
+    IMAGE( 
+        CASE( IF( Job_Sent_Days__c <1,0,Job_Sent_Days__c ) , 
+        0, "img/alohaSkin/help_orange.png", 
+        1, "img/samples/light_green.gif", 
+        2, "img/samples/light_green.gif", 
+        3, "img/samples/light_green.gif", 
+        4, "img/samples/light_green.gif", 
+        5, "img/samples/light_yellow.gif", 
+        "img/samples/light_red.gif"), 
+        "" 
+        )	
+--
+    Lead Creation Date	
+    Converted_From__r.CreatedDate
+--
+    Lead to Quote Duration	
+    IF(DATEVALUE(TEXT(Lead_Creation_Date__c)) <= Quote_Sent_Date__c, ROUND(Quote_Sent_Date__c - DATEVALUE(TEXT(Lead_Creation_Date__c)),0),0)
+--
     MGH Overall Workdays //From Quote Request --> Actual Delivery
     (5 * ( FLOOR( ( Actual_Delivery__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD(Actual_Delivery__c - DATE( 1900, 1, 8), 7 ) ) ) 
     - 
     (5 * ( FLOOR( ( Quote_Request__c - DATE( 1900, 1, 8) ) / 7 ) ) + MIN( 5, MOD(Quote_Request__c - DATE( 1900, 1, 8), 7 ) ) )
+--
 
+//more to be added here
 
 
 // Fletcher Aluminium Account Fields
