@@ -1,7 +1,7 @@
 /* 
-    This file contains salesforce formula fields authored by Brian Joynt
+    This file contains salesforce formula fields 
 */
-    Data Model	
+    Salesforce Data Model	
     http://www.salesforce.com/us/developer/docs/api/Content/data_model.htm
 
 //Fletcher Aluminium Opportunity Fields
