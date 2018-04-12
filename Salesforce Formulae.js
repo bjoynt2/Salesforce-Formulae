@@ -1,6 +1,86 @@
 /* 
     This file contains salesforce formula fields authored by Brian Joynt
 */
+    Data Model	
+    http://www.salesforce.com/us/developer/docs/api/Content/data_model.htm
+
+
+
+// Fletcher Aluminium Account Fields
+
+    Search Companies Office	
+    http://www.business.govt.nz/companies/app/ui/pages/companies/search?mode=standard&type=entities&q={!IF(LEN( Account.Account_Legal_Name__c )>0, Account.Account_Legal_Name__c , Account.Name )}
+--
+    Current 18 ID	
+    CASESAFEID( Id )
+--
+    Data Quality Description	
+    IF( Data_Quality_Score__c =100,"All Account Details Captured", "Missing: "&IF( ISPICKVAL( Industry,""),"Industry, ","")&""&IF(ISPICKVAL(Rating,""), "Rating, ","")&""&IF( LEN(BillingCity) = 0, "Complete Address, ","")&""&IF( LEN(Phone) = 0, "Phone, ","")&""&IF( ISPICKVAL(Type,""), "Type",""))
+--
+    Data Quality Score	
+    IF( ISPICKVAL(Industry,""), 0,20) + IF( ISPICKVAL(Rating,""), 0,20) + IF( LEN(BillingCity) = 0, 0,20) + IF(LEN(Phone) = 0, 0,20) + IF( ISPICKVAL(Type,""), 0,20)
+--
+    IF
+    IF( IFOTIS_Lines__c <>0, In_Full_Pass__c/IFOTIS_Lines__c,0)
+--
+    IFOTIS
+    IF( IFOTIS_Lines__c <>0, IFOTIS_Passed__c/IFOTIS_Lines__c,0)
+--
+    IS
+    IF( IFOTIS_Lines__c <>0, In_Spec_Pass__c /IFOTIS_Lines__c,0)
+--
+    Manual Invoice Summary	
+    "Narration: " & Narration__c & BR() & 
+    "Cost Code: " & TEXT(Cost_Centre_Code__c ) & BR() & 
+    "Value: $" & TEXT(Value__c )
+--
+    Movex Customer	
+    M3_CUNO__c & " - " & Account_Legal_Name__c & " | " & Name
+--
+    OT
+    IF( IFOTIS_Lines__c <>0, On_Time_Pass__c /IFOTIS_Lines__c,0)
+--
+    PA Contact FirstName	    
+    Primary_Contact__r.FirstName
+--
+    PA Contact LastName	
+    Primary_Contact__r.LastName
+--
+    Primary Contact Email	
+    Primary_Contact__r.Email
+--
+    Primary Contact Full Name	
+    Primary_Contact__r.FirstName & " " & Primary_Contact__r.LastName
+--
+    Primary Contact Mobile	
+    Primary_Contact__r.MobilePhone
+--
+    Primary Contact Phone	
+    Primary_Contact__r.Phone
+--
+    Quoted Rate	
+    IMAGE("http://chart.apis.google.com/chart?cht=p3&chd=t:" & 
+    Text(Pending__c/(Quoted__c - Pending__c)) & "," & 
+    Text((Quoted__c - Pending__c)/Quoted__c) & 
+    "&chs=275x100&chf=bg,s,F3F3EC&chl=Pending|Quoted&chco=5555ff", 
+    "chart text")
+--
+    Start Address	
+    IF(LEN( $User.Address__c )>0,$User.Address__c,"")
+--
+    User Company Name	
+    Owner.CompanyName
+--
+    Win Rate	
+    IMAGE("http://chart.apis.google.com/chart?cht=p3&chd=t:" & 
+    Text(Won__c/(Won__c + Lost__c)) & "," & 
+    Text(Lost__c/(Won__c + Lost__c)) & 
+    "&chs=275x100&chf=bg,s,F3F3EC&chl=Won|Lost&chco=5555ff", 
+    "chart text")
+
+
+
+
 
 // Fletcher Living Maintenance
 
