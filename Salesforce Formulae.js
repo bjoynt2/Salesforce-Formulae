@@ -4,6 +4,12 @@
     Salesforce Data Model	
     http://www.salesforce.com/us/developer/docs/api/Content/data_model.htm
 
+//General
+
+NZBN Search	
+HYPERLINK("https://www.nzbn.govt.nz/search-the-nzbn-register/nzbnresults#search="&IF(LEN( Legal_Name__c)>0, Legal_Name__c , Name ), "NZBN Search")
+
+
 //Fletcher Aluminium Opportunity Fields
 
 --
