@@ -6,6 +6,16 @@
 
 //General
 
+
+Ultimate Parent Account:
+BLANKVALUE( Parent.Parent.Parent.Parent.Parent.Name,
+BLANKVALUE( Parent.Parent.Parent.Parent.Name,
+BLANKVALUE( Parent.Parent.Parent.Name,
+BLANKVALUE( Parent.Parent.Name,
+BLANKVALUE( Parent.Name,
+Name ) ) ) ))
+
+
 NZBN Search	
 HYPERLINK("https://www.nzbn.govt.nz/search-the-nzbn-register/nzbnresults#search="&IF(LEN( Legal_Name__c)>0, Legal_Name__c , Name ), "NZBN Search")
 
