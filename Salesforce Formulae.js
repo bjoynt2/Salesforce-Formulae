@@ -493,3 +493,13 @@ HYPERLINK("https://www.nzbn.govt.nz/search-the-nzbn-register/nzbnresults#search=
     11, "11", 
     12, "12", 
     NULL)
+
+
+// Primary Contact Details
+IF(LEN(Primary_Contact__c)>0, IMAGE("/resource/ContactIcons/user.png","Contact", 20, 20) & " " & Primary_Contact__r.FirstName & " " & Primary_Contact__r.LastName & " ","")
+&
+IF(LEN(Primary_Contact__r.Email)>1," Email: " &
+Primary_Contact__r.Email , "")
+&
+IF(LEN(Primary_Contact__r.MobilePhone)>1, " Mob: " &
+Primary_Contact__r.MobilePhone, "")
