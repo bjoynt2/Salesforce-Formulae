@@ -4,6 +4,41 @@
     Salesforce Data Model	
     http://www.salesforce.com/us/developer/docs/api/Content/data_model.htm
 
+// Call Planning
+
+//Call Cycle Frequency	
+Weekly
+Fortnightly
+Monthly
+Bi-Monthly
+Quarterly
+Bi-Annually
+Annually
+Casual
+Not required
+
+Overdue Flag
+IF(OR(Next_Activity_Date__c < TODAY(), AND(ISBLANK( Last_Activity_Date_Custom__c ),NOT(ISBLANK(TEXT(Call_Cycle_Frequency__c) )))), IMAGE("/img/samples/flag_red.gif", "Overdue Flag") , "")
+
+Is Overdue	
+OR(Next_Activity_Date__c < TODAY(), AND(ISBLANK( Last_Activity_Date_Custom__c ),NOT(ISBLANK(TEXT(Call_Cycle_Frequency__c) ))))
+
+Last Activity Since	
+IF(TODAY() = Last_Activity_Date_Custom__c , "Today", IF(ISBLANK(Last_Activity_Date_Custom__c),"Never", IF((TODAY()-Last_Activity_Date_Custom__c) > 0, TEXT(TODAY()-Last_Activity_Date_Custom__c) & " Days Ago", "Today") ))
+
+Next Activity Date	
+CASE( TEXT(Call_Cycle_Frequency__c),
+'Weekly', Last_Activity_Date_Custom__c +7,
+'Fortnightly', Last_Activity_Date_Custom__c +14,
+'Monthly', Last_Activity_Date_Custom__c +30,
+'Bi-Monthly', Last_Activity_Date_Custom__c +60,
+'Quarterly', Last_Activity_Date_Custom__c +90,
+'Bi-Annually', Last_Activity_Date_Custom__c+180,
+'Annually', Last_Activity_Date_Custom__c +360,
+null)
+
+
+
 //General
 
 
